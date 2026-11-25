@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مزاج اليوم — بطاقتك السريعة</title>
+  <style>
+    :root {
+      --bg1: #121324;
+      --bg2: #1f2240;
+      --card: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.16);
+      --text: #f7f8fc;
+      --muted: #b8bdd4;
+      --accent: #ff7b54;
+      --accent2: #ffb26b;
+      --ok: #5be39d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      background: radial-gradient(circle at top right, #2e2a5e, var(--bg1) 55%, #0c0d18);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+    }
+    .app {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: center;
+    }
+    .step { margin-bottom: 18px; }
+    .step-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--accent2);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .choice {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+      text-align: center;
+    }
+    .choice:hover { background: rgba(255, 255, 255, 0.12); }
+    .choice.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #14141f;
+      font-weight: 700;
+      border-color: transparent;
+    }
+    .hold-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px dashed var(--accent2);
+      background: rgba(255, 178, 107, 0.1);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .hold-btn.done {
+      border-style: solid;
+      background: rgba(91, 227, 157, 0.16);
+      border-color: var(--ok);
+      color: var(--ok);
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #14141f;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+    .result-box {
+      display: none;
+      margin-top: 18px;
+      background: linear-gradient(160deg, rgba(255, 123, 84, 0.16), rgba(31, 34, 64, 0.9));
+      border: 1px solid rgba(255, 178, 107, 0.35);
+      border-radius: 20px;
+      padding: 18px;
+    }
+    .result-box.show { display: block; }
+    .date-tag {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .vibe-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin: 0 0 10px;
+    }
+    .vibe-quote {
+      font-size: 0.96rem;
+      line-height: 1.6;
+      margin: 0 0 14px;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.84rem;
+      background: rgba(0, 0, 0, 0.22);
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .sec-btn {
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .note {
+      font-size: 0.78rem;
+      color: var(--ok);
+      text-align: center;
+      min-height: 18px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>مزاج اليوم</h1>
+    <p class="subtitle">ثلاث لمسات سريعة وتطلعلك بطاقة جو يومك</p>
+
+    <div class="step">
+      <div class="step-title">1. شو لفت نظرك اليوم؟</div>
+      <div class="grid" id="itemsGrid"></div>
+    </div>
+
+    <div class="step">
+      <div class="step-title">2. شو طاقتك هلق؟</div>
+      <div class="grid" id="energyGrid"></div>
+    </div>
+
+    <div class="step">
+      <div class="step-title">3. لمسة حظ سريعة</div>
+      <button class="hold-btn" id="luckBtn" type="button">اضغط هنا لسحب لمسة اليوم</button>
+    </div>
+
+    <button class="submit-btn" id="generateBtn" type="button">اكتشف جو اليوم</button>
+
+    <div class="result-box" id="resultBox">
+      <div class="date-tag" id="dateText"></div>
+      <h2 class="vibe-title" id="vibeTitle"></h2>
+      <p class="vibe-quote" id="vibeQuote"></p>
+      <div class="meta-row">
+        <span>✅ مناسب اليوم: <strong id="doText"></strong></span>
+      </div>
+      <div class="meta-row">
+        <span>⚠️ تجنّبه اليوم: <strong id="avoidText"></strong></span>
+      </div>
+      <div class="actions">
+        <button class="sec-btn" id="copyBtn" type="button">نسخ النتيجة</button>
+        <button class="sec-btn" id="againBtn" type="button">جرّب خيار تاني</button>
+      </div>
+      <div class="note" id="statusNote"></div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================
+    // عدّل أو أضف العبارات هنا يومياً بكل سهولة
+    // =========================================================
+    const DAILY_CONFIG = {
+      items: ["☕ قهوة", "🧭 بوصلة", "🔑 مفتاح", "☁️ غيمة", "⚡ شرارة", "🎧 سماعات"],
+      energies: ["🌿 هادئة", "🔥 حماسية", "⚖️ متوازنة"],
+      titles: [
+        "هدوء ما قبل فكرة ذكية",
+        "يوم الخطوات الواضحة",
+        "انطلاقة سريعة بلا تردد",
+        "صفاء يختصر عليك نصف الطريق",
+        "مزاج انتقائي بامتياز",
+        "طاقة هادئة بس أثرها كبير"
+      ],
+      quotes: [
+        "مش ضروري تحل كل شي اليوم؛ خطوة واحدة صادقة بتكفي لتغيّر مسار اليوم.",
+        "الهدوء اللي بتحافظ عليه هلق رح يوفّر عليك توتر آخر النهار.",
+        "لو حسّيت بتشتت، ارجع لأبسط مهمة قدامك وابدأ فيها فوراً.",
+        "بعض الفرص بتبين لما تخفف سرعة وتنتبه للتفاصيل الصغيرة.",
+        "مزاجك اليوم بيميل للوضوح؛ قول «لا» للشغلات اللي بتستنزفك.",
+        "اللحظة المناسبة أحياناً بتكون إنك تاخد نفس وتكمل بهدوء."
+      ],
+      dos: [
+        "ترتيب أولوية واحدة واضحة",
+        "مشوار قصير أو تغيير مكان",
+        "إنهاء مهمة مؤجلة من زمان",
+        "تواصل سريع مع شخص مريح",
+        "تخصيص 20 دقيقة لنفسك"
+      ],
+      avoids: [
+        "الدخول بنقاشات جانبية طويلة",
+        "اتخاذ قرار مستعجل تحت ضغط",
+        "التشتت بين عشر شغلات سوا",
+        "مقارنة يومك بيوم غيرك",
+        "السهر الزائد على حساب راحتك"
+      ]
+    };
+
+    // =========================================================
+    // منطق اللعبة (لا داعي لتعديله عادةً)
+    // =========================================================
+    let selectedItem = 0;
+    let selectedEnergy = 0;
+    let luckSeed = 1;
+
+    const itemsGrid = document.getElementById("itemsGrid");
+    const energyGrid = document.getElementById("energyGrid");
+    const luckBtn = document.getElementById("luckBtn");
+    const generateBtn = document.getElementById("generateBtn");
+    const resultBox = document.getElementById("resultBox");
+    const statusNote = document.getElementById("statusNote");
+
+    function renderChoices(container, list, onSelect) {
+      container.innerHTML = "";
+      list.forEach((label, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "choice" + (idx === 0 ? " active" : "");
+        btn.textContent = label;
+        btn.addEventListener("click", () => {
+          [...container.children].forEach(el => el.classList.remove("active"));
+          btn.classList.add("active");
+          onSelect(idx);
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    renderChoices(itemsGrid, DAILY_CONFIG.items, idx => selectedItem = idx);
+    renderChoices(energyGrid, DAILY_CONFIG.energies, idx => selectedEnergy = idx);
+
+    luckBtn.addEventListener("click", () => {
+      const now = new Date();
+      luckSeed = (now.getMilliseconds() + now.getSeconds() * 31 + Math.floor(Math.random() * 99)) % 997 + 1;
+      luckBtn.classList.add("done");
+      luckBtn.textContent = "✓ تم سحب لمسة الحظ";
+    });
+
+    function getTodayKey() {
+      const d = new Date();
+      return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    }
+
+    function pickFrom(arr, baseNum, offset) {
+      const index = Math.abs(baseNum + offset) % arr.length;
+      return arr[index];
+    }
+
+    let lastSummary = "";
+
+    generateBtn.addEventListener("click", () => {
+      const d = new Date();
+      const dateKey = getTodayKey();
+      const combined = dateKey + (selectedItem + 1) * 37 + (selectedEnergy + 1) * 73 + luckSeed;
+
+      const title = pickFrom(DAILY_CONFIG.titles, combined, 0);
+      const quote = pickFrom(DAILY_CONFIG.quotes, combined, 3);
+      const doItem = pickFrom(DAILY_CONFIG.dos, combined, 5);
+      const avoidItem = pickFrom(DAILY_CONFIG.avoids, combined, 9);
+
+      const formattedDate = d.toLocaleDateString("ar-EG", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+
+      document.getElementById("dateText").textContent = formattedDate;
+      document.getElementById("vibeTitle").textContent = title;
+      document.getElementById("vibeQuote").textContent = quote;
+      document.getElementById("doText").textContent = doItem;
+      document.getElementById("avoidText").textContent = avoidItem;
+
+      lastSummary =
+        `مزاج اليوم (${formattedDate}):\n` +
+        `✨ ${title}\n` +
+        `💬 "${quote}"\n` +
+        `✅ مناسب اليوم: ${doItem}\n` +
+        `⚠️ تجنّبه اليوم: ${avoidItem}\n` +
+        `جرّبها: ${window.location.href}`;
+
+      statusNote.textContent = "";
+      resultBox.classList.add("show");
+      resultBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      if (!lastSummary) return;
+      try {
+        await navigator.clipboard.writeText(lastSummary);
+        statusNote.textContent = "تم نسخ النتيجة! فيك تلصقها على فيسبوك.";
+      } catch {
+        statusNote.textContent = "انسخ النص يدوياً من البطاقة.";
+      }
+    });
+
+    document.getElementById("againBtn").addEventListener("click", () => {
+      luckSeed = (luckSeed * 17 + 13) % 997 + 1;
+      generateBtn.click();
+    });
+  </script>
+</body>
+</html>
